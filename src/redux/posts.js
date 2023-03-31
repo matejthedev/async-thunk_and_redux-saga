@@ -1,27 +1,27 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-export const postsSlice = createSlice({
-  name: "posts",
-  initialState: {
-    postsList: [],
-    isLoading: false,
-    errorMessage: ""
-  },
-  reducers: {
-    getPostsFetch: (state) => {
-      state.isLoading = true;
-    },
-    getPostsSuccess: (state, action) => {
-      state.postsList = action.payload;
-      state.isLoading = false;
-    },
-    getPostsFailure: (state) => {
-      state.isLoading = false;
-      state.errorMessage = "Getting User failed!"
-    },
-  },
+const initialState = {
+  postsList: []
+}
+
+const getPosts = async () => {
+  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
+  return await res.json();
+};
+
+export const fetchPosts = createAsyncThunk("posts/fetch", async () => {
+  return await getPosts();
 });
 
-export const { getPostsFetch, getPostsSuccess, getPostsFailure } = postsSlice.actions;
+const postsSlice = createSlice({
+  name: "posts",
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(fetchPosts.fulfilled, (state, action) => {
+      state.postsList = action.payload;
+    });
+  },
+});
 
 export default postsSlice.reducer;
